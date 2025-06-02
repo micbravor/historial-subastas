@@ -186,58 +186,92 @@ export function AuctionDetails({ auctionId, onBack }: AuctionDetailsProps) {
               </CardContent>
             </Card>
 
-            {/* Pujas - Mostrar según el estado */}
-            {(estadoLower === "activa" || auction.mis_pujas.length > 0) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Gavel className="w-5 h-5" />
-                    {estadoLower === "activa" ? "Pujas" : "Mis Pujas"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Mis pujas */}
-                  {auction.mis_pujas.length > 0 && (
-                    <div className="mb-4">
-                      <h3 className="text-sm font-medium mb-2">Mis pujas ({auction.mis_pujas.length})</h3>
-                      <div className="space-y-2">
-                        {auction.mis_pujas.map((puja, index) => (
-                          <div key={puja.id_puja} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                            <div>
-                              <p className="font-semibold">{formatCurrency(puja.monto)}</p>
-                              <p className="text-sm text-gray-600">{formatDate(`${puja.fecha}T${puja.hora}`)}</p>
-                            </div>
-                            {index === 0 && <Badge className="bg-blue-100 text-blue-800">Más reciente</Badge>}
+            {/* Sección de Pujas - Siempre visible */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gavel className="w-5 h-5" />
+                  Pujas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Mis pujas */}
+                {auction.mis_pujas.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium mb-2">Mis pujas ({auction.mis_pujas.length})</h3>
+                    <div className="space-y-2">
+                      {auction.mis_pujas.map((puja, index) => (
+                        <div key={puja.id_puja} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                          <div>
+                            <p className="font-semibold">{formatCurrency(puja.monto)}</p>
+                            <p className="text-sm text-gray-600">{formatDate(`${puja.fecha}T${puja.hora}`)}</p>
                           </div>
-                        ))}
-                      </div>
+                          {index === 0 && <Badge className="bg-blue-100 text-blue-800">Más reciente</Badge>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pujas recientes (solo en subastas activas) */}
+                {estadoLower === "activa" && auction.pujas_recientes && auction.pujas_recientes.length > 0 && (
+                  <div className={auction.mis_pujas.length > 0 ? "mt-4" : ""}>
+                    <h3 className="text-sm font-medium mb-2">Pujas recientes de otros participantes</h3>
+                    <div className="space-y-2">
+                      {auction.pujas_recientes.map((puja) => (
+                        <div key={puja.id_puja} className="flex justify-between items-center p-3 bg-blue-50 rounded">
+                          <div>
+                            <p className="font-semibold">{formatCurrency(puja.monto)}</p>
+                            <p className="text-sm text-gray-600">{formatDate(`${puja.fecha}T${puja.hora}`)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mensaje cuando no hay pujas */}
+                {auction.mis_pujas.length === 0 &&
+                  (!auction.pujas_recientes || auction.pujas_recientes.length === 0) && (
+                    <div className="text-center py-8">
+                      <Gavel className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500 mb-1">No hay pujas registradas en esta subasta</p>
+                      <p className="text-sm text-gray-400">
+                        {estadoLower === "activa"
+                          ? "Sé el primero en participar"
+                          : "Esta subasta no recibió pujas durante su período activo"}
+                      </p>
                     </div>
                   )}
 
-                  {/* Pujas recientes (solo en subastas activas) */}
-                  {estadoLower === "activa" && auction.pujas_recientes && auction.pujas_recientes.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-medium mb-2">Pujas recientes</h3>
-                      <div className="space-y-2">
-                        {auction.pujas_recientes.map((puja) => (
-                          <div key={puja.id_puja} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                            <div>
-                              <p className="font-semibold">{formatCurrency(puja.monto)}</p>
-                              <p className="text-sm text-gray-600">{formatDate(`${puja.fecha}T${puja.hora}`)}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                {/* Información adicional según el estado */}
+                {estadoLower === "cancelada" && auction.mis_pujas.length > 0 && (
+                  <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded">
+                    <p className="text-orange-700 text-sm">
+                      <strong>Nota:</strong> Las pujas realizadas en esta subasta fueron canceladas y no tienen validez.
+                    </p>
+                  </div>
+                )}
 
-                  {auction.mis_pujas.length === 0 &&
-                    (!auction.pujas_recientes || auction.pujas_recientes.length === 0) && (
-                      <p className="text-gray-500">No hay pujas registradas en esta subasta.</p>
-                    )}
-                </CardContent>
-              </Card>
-            )}
+                {estadoLower === "expirada" && auction.mis_pujas.length > 0 && (
+                  <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded">
+                    <p className="text-gray-700 text-sm">
+                      <strong>Nota:</strong> Esta subasta expiró sin alcanzar el precio de reserva o sin adjudicación.
+                    </p>
+                  </div>
+                )}
+
+                {estadoLower === "finalizada" && auction.mis_pujas.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <p className="text-blue-700 text-sm">
+                      <strong>Nota:</strong> Esta subasta ha finalizado.
+                      {auction.monto_final &&
+                        ` El monto final de adjudicación fue ${formatCurrency(auction.monto_final)}.`}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Panel lateral */}
@@ -302,10 +336,6 @@ export function AuctionDetails({ auctionId, onBack }: AuctionDetailsProps) {
                   <p className="font-semibold">
                     {auction.participantes_count} / {auction.cantidad_max_participantes}
                   </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total de pujas</p>
-                  <p className="font-semibold">{auction.pujas_count}</p>
                 </div>
               </CardContent>
             </Card>

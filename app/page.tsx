@@ -19,7 +19,7 @@ export default function Home() {
   }
 
   return (
-    <BrowserFrame title="ZAAGOM - Historial de Subastas">
+    <BrowserFrame>
       <div className="min-h-screen bg-white relative overflow-hidden">
         <BackgroundCircles />
         <Header />
